@@ -1,0 +1,47 @@
+{
+  "name": "manga-scraper-api",
+  "version": "1.0.0",
+  "description": "Comprehensive REST API for scraping manga, manhwa, manhua content from multiple sources",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts",
+    "vercel-build": "tsc",
+    "test": "bun test tests/api.test.ts",
+    "test:manual": "tsx scripts/test-endpoints.ts"
+  },
+  "keywords": [
+    "manga",
+    "manhwa",
+    "manhua",
+    "scraper",
+    "api",
+    "hono"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "hono": "^4.0.0",
+    "@hono/node-server": "^1.8.0",
+    "@hono/swagger-ui": "^0.2.0",
+    "axios": "^1.6.0",
+    "cheerio": "^1.0.0-rc.12",
+    "node-cache": "^5.1.2",
+    "@upstash/redis": "^1.28.0",
+    "hono-rate-limiter": "^0.3.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.0",
+    "tsx": "^4.7.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "prettier": "^3.1.0"
+  }
+}
