@@ -1,4 +1,4 @@
-# Manga Scraper API
+# manga-api
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
@@ -52,8 +52,8 @@ A high-performance REST API for scraping manga, manhwa, and manhua content from 
 
 ```bash
 # Clone the repository
-git clone <repository-url>
-cd manga-scraper-api
+git clone https://github.com/ryanwtf88/manga-api.git
+cd manga-api
 
 # Install dependencies
 npm install
@@ -328,7 +328,7 @@ GET /api/v1/mangareader/trending?bustCache=true
 
 ### Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/ryanwtf88/manga-api)
 
 ```bash
 # Install Vercel CLI
@@ -577,9 +577,9 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 ## Support
 
-- **Issues**: [GitHub Issues](https://github.com/your-repo/issues)
+- **Issues**: [GitHub Issues](https://github.com/ryanwtf88/manga-api/issues)
 - **Documentation**: [API Docs](https://your-api.vercel.app/api/docs)
-- **Discussions**: [GitHub Discussions](https://github.com/your-repo/discussions)
+- **Discussions**: [GitHub Discussions](https://github.com/ryanwtf88/manga-api/discussions)
 
 ## Acknowledgments
 
