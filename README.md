@@ -578,7 +578,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 ## Support
 
 - **Issues**: [GitHub Issues](https://github.com/ryanwtf88/manga-api/issues)
-- **Documentation**: [API Docs](https://your-api.vercel.app/api/docs)
+- **Documentation**: [API Docs](https://multi-manga-api.vercel.app/api/docs)
 - **Discussions**: [GitHub Discussions](https://github.com/ryanwtf88/manga-api/discussions)
 
 ## Acknowledgments
