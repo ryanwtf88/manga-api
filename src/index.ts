@@ -14,6 +14,8 @@ import omegascansRoutes from './routes/omegascans.js';
 import rssRoutes from './routes/rss.js';
 import graphqlRoutes from './routes/graphql.js';
 import axios from 'axios';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 const app = new Hono();
 
@@ -101,8 +103,20 @@ app.route('/api/v1/omegascans', omegascansRoutes);
 app.route('/api/rss', rssRoutes);
 app.route('/api/graphql', graphqlRoutes);
 
-// Swagger UI documentation
-app.get('/api/docs', swaggerUI({
+// Serve static documentation
+app.get('/api/docs', (c) => {
+  try {
+    const docsPath = join(process.cwd(), 'public', 'docs', 'index.html');
+    const html = readFileSync(docsPath, 'utf-8');
+    return c.html(html);
+  } catch (error) {
+    // Fallback to Swagger UI if static docs not found
+    return c.redirect('/api/docs/swagger');
+  }
+});
+
+// Swagger UI documentation (fallback)
+app.get('/api/docs/swagger', swaggerUI({
   url: '/api/openapi.json',
 }));
 

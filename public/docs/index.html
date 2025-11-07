@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manga Scraper API - Documentation</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1e293b;
+            --dark-lighter: #334155;
+            --gray: #64748b;
+            --light: #f1f5f9;
+            --border: #e2e8f0;
+            --code-bg: #1e1e1e;
+            --sidebar-width: 280px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid var(--border);
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 2rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .sidebar-nav {
+            padding: 1.5rem 0;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-section-title {
+            padding: 0.5rem 1.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--gray);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-item {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item:hover {
+            background: var(--light);
+            color: var(--primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), transparent);
+            color: var(--primary);
+            border-left-color: var(--primary);
+            font-weight: 600;
+        }
+
+        .nav-item i {
+            width: 20px;
+            font-size: 1.1rem;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            background: var(--light);
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .header-badge {
+            background: var(--primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        /* Cards */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .card-description {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Endpoint Cards */
+        .endpoint-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .endpoint-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .endpoint-card:hover {
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+            transform: translateY(-2px);
+            border-color: var(--primary);
+        }
+
+        .endpoint-method {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .method-get {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .method-post {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--dark);
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .endpoint-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Code Blocks */
+        .code-block {
+            background: var(--code-bg);
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .code-block code {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .code-language {
+            color: var(--gray);
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .copy-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+        }
+
+        .badge-primary {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: var(--light);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 700;
+            color: var(--dark);
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Feature Grid */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-card {
+            background: white;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .feature-description {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        /* Source Cards */
+        .source-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .source-card {
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .source-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+        }
+
+        .source-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .source-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .source-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .source-url {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .source-features {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .source-features li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--dark);
+        }
+
+        .source-features li i {
+            color: var(--success);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s;
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .endpoint-grid,
+            .feature-grid,
+            .source-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gray);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Main App Component
+        function App() {
+            const [activePage, setActivePage] = useState('home');
+
+            return (
+                <div className="app-container">
+                    <Sidebar activePage={activePage} setActivePage={setActivePage} />
+                    <div className="main-content">
+                        <Header activePage={activePage} />
+                        <div className="content fade-in">
+                            {activePage === 'home' && <HomePage />}
+                            {activePage === 'quickstart' && <QuickStartPage />}
+                            {activePage === 'mangareader' && <MangaReaderPage />}
+                            {activePage === 'hentai20' && <Hentai20Page />}
+                            {activePage === 'omegascans' && <OmegaScansPage />}
+                            {activePage === 'configuration' && <ConfigurationPage />}
+                            {activePage === 'deployment' && <DeploymentPage />}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Sidebar Component
+        function Sidebar({ activePage, setActivePage }) {
+            return (
+                <div className="sidebar">
+                    <div className="sidebar-header">
+                        <div className="logo">
+                            <i className="fas fa-book-open"></i> Manga API
+                        </div>
+                    </div>
+                    <div className="sidebar-nav">
+                        <div className="nav-section">
+                            <div className="nav-section-title">Getting Started</div>
+                            <div 
+                                className={`nav-item ${activePage === 'home' ? 'active' : ''}`}
+                                onClick={() => setActivePage('home')}
+                            >
+                                <i className="fas fa-home"></i>
+                                <span>Introduction</span>
+                            </div>
+                            <div 
+                                className={`nav-item ${activePage === 'quickstart' ? 'active' : ''}`}
+                                onClick={() => setActivePage('quickstart')}
+                            >
+                                <i className="fas fa-rocket"></i>
+                                <span>Quick Start</span>
+                            </div>
+                        </div>
+
+                        <div className="nav-section">
+                            <div className="nav-section-title">API Sources</div>
+                            <div 
+                                className={`nav-item ${activePage === 'mangareader' ? 'active' : ''}`}
+                                onClick={() => setActivePage('mangareader')}
+                            >
+                                <i className="fas fa-book"></i>
+                                <span>MangaReader</span>
+                            </div>
+                            <div 
+                                className={`nav-item ${activePage === 'hentai20' ? 'active' : ''}`}
+                                onClick={() => setActivePage('hentai20')}
+                            >
+                                <i className="fas fa-fire"></i>
+                                <span>Hentai20</span>
+                            </div>
+                            <div 
+                                className={`nav-item ${activePage === 'omegascans' ? 'active' : ''}`}
+                                onClick={() => setActivePage('omegascans')}
+                            >
+                                <i className="fas fa-star"></i>
+                                <span>OmegaScans</span>
+                            </div>
+                        </div>
+
+                        <div className="nav-section">
+                            <div className="nav-section-title">Configuration</div>
+                            <div 
+                                className={`nav-item ${activePage === 'configuration' ? 'active' : ''}`}
+                                onClick={() => setActivePage('configuration')}
+                            >
+                                <i className="fas fa-cog"></i>
+                                <span>Configuration</span>
+                            </div>
+                            <div 
+                                className={`nav-item ${activePage === 'deployment' ? 'active' : ''}`}
+                                onClick={() => setActivePage('deployment')}
+                            >
+                                <i className="fas fa-cloud"></i>
+                                <span>Deployment</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Header Component
+        function Header({ activePage }) {
+            const titles = {
+                home: 'Introduction',
+                quickstart: 'Quick Start Guide',
+                mangareader: 'MangaReader API',
+                hentai20: 'Hentai20 API',
+                omegascans: 'OmegaScans API',
+                configuration: 'Configuration',
+                deployment: 'Deployment Guide'
+            };
+
+            return (
+                <div className="header">
+                    <div className="header-content">
+                        <h1 className="header-title">{titles[activePage]}</h1>
+                        <span className="header-badge">v1.0.0</span>
+                    </div>
+                </div>
+            );
+        }
+
+        // Home Page
+        function HomePage() {
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">Welcome to Manga Scraper API</h2>
+                        <p className="card-description">
+                            A high-performance REST API for scraping manga, manhwa, and manhua content from multiple sources. 
+                            Built with TypeScript, Hono framework, and designed for serverless deployment.
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Features</h3>
+                        <div className="feature-grid">
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-database"></i></div>
+                                <div className="feature-title">Multi-Source</div>
+                                <div className="feature-description">Support for MangaReader, Hentai20, and OmegaScans</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-bolt"></i></div>
+                                <div className="feature-title">Smart Caching</div>
+                                <div className="feature-description">Multi-layer caching with Redis and in-memory storage</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-shield-alt"></i></div>
+                                <div className="feature-title">Rate Limiting</div>
+                                <div className="feature-description">Built-in protection against abuse</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-code"></i></div>
+                                <div className="feature-title">GraphQL API</div>
+                                <div className="feature-description">Query data with GraphQL</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-rss"></i></div>
+                                <div className="feature-title">RSS Feeds</div>
+                                <div className="feature-description">Subscribe to latest updates</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-image"></i></div>
+                                <div className="feature-title">Image Proxy</div>
+                                <div className="feature-description">Bypass CORS restrictions</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Supported Sources</h3>
+                        <div className="source-grid">
+                            <div className="source-card">
+                                <div className="source-header">
+                                    <div className="source-icon"><i className="fas fa-book"></i></div>
+                                    <div>
+                                        <div className="source-name">MangaReader</div>
+                                        <div className="source-url">mangareader.to</div>
+                                    </div>
+                                </div>
+                                <span className="badge badge-success">Active</span>
+                                <ul className="source-features">
+                                    <li><i className="fas fa-check"></i> Search & Discovery</li>
+                                    <li><i className="fas fa-check"></i> Popular & Trending</li>
+                                    <li><i className="fas fa-check"></i> Genres & Filters</li>
+                                    <li><i className="fas fa-check"></i> 5000+ Manga</li>
+                                </ul>
+                            </div>
+
+                            <div className="source-card">
+                                <div className="source-header">
+                                    <div className="source-icon"><i className="fas fa-fire"></i></div>
+                                    <div>
+                                        <div className="source-name">Hentai20</div>
+                                        <div className="source-url">hentai20.io</div>
+                                    </div>
+                                </div>
+                                <span className="badge badge-success">Active</span>
+                                <ul className="source-features">
+                                    <li><i className="fas fa-check"></i> Search & Categories</li>
+                                    <li><i className="fas fa-check"></i> Popular Content</li>
+                                    <li><i className="fas fa-check"></i> Latest Updates</li>
+                                    <li><i className="fas fa-check"></i> Webtoon Support</li>
+                                </ul>
+                            </div>
+
+                            <div className="source-card">
+                                <div className="source-header">
+                                    <div className="source-icon"><i className="fas fa-star"></i></div>
+                                    <div>
+                                        <div className="source-name">OmegaScans</div>
+                                        <div className="source-url">omegascans.org</div>
+                                    </div>
+                                </div>
+                                <span className="badge badge-success">Active</span>
+                                <ul className="source-features">
+                                    <li><i className="fas fa-check"></i> Comics & Novels</li>
+                                    <li><i className="fas fa-check"></i> Latest Updates</li>
+                                    <li><i className="fas fa-check"></i> High Quality</li>
+                                    <li><i className="fas fa-check"></i> Fast API</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // Quick Start Page
+        function QuickStartPage() {
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">Quick Start Guide</h2>
+                        <p className="card-description">
+                            Get started with the Manga Scraper API in minutes. Follow this guide to set up and start using the API.
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">1. Installation</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                                <button className="copy-btn" onClick={() => copyToClipboard('git clone https://github.com/your-repo/manga-api.git\ncd manga-api\nnpm install')}>
+                                    <i className="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <code>{`# Clone the repository
+git clone https://github.com/your-repo/manga-api.git
+cd manga-api
+
+# Install dependencies
+npm install
+
+# Copy environment file
+cp .env.example .env
+
+# Start development server
+npm run dev`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">2. Your First API Call</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                                <button className="copy-btn" onClick={() => copyToClipboard('curl "http://localhost:3000/api/v1/mangareader/search?q=one+piece"')}>
+                                    <i className="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <code>{`# Search for manga
+curl "http://localhost:3000/api/v1/mangareader/search?q=one+piece"
+
+# Get trending manga
+curl "http://localhost:3000/api/v1/mangareader/trending?page=1"
+
+# Get manga details
+curl "http://localhost:3000/api/v1/mangareader/info/one-piece-3"`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">3. Using with JavaScript</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">javascript</span>
+                                <button className="copy-btn">
+                                    <i className="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <code>{`// Using Fetch API
+const response = await fetch(
+    'http://localhost:3000/api/v1/mangareader/search?q=naruto'
+);
+const data = await response.json();
+
+console.log(data.data); // Array of manga results
+
+// Get manga info
+const info = await fetch(
+    'http://localhost:3000/api/v1/mangareader/info/naruto-1'
+).then(r => r.json());
+
+console.log(info.data); // Manga details with chapters`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">4. Response Format</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">json</span>
+                            </div>
+                            <code>{`{
+  "success": true,
+  "source": "mangareader",
+  "data": [
+    {
+      "id": "one-piece-3",
+      "title": "One Piece",
+      "cover": "https://example.com/cover.jpg",
+      "latestChapter": "Chapter 1100",
+      "genres": ["Action", "Adventure"],
+      "rating": 9.5,
+      "status": "Ongoing"
+    }
+  ],
+  "cached": false,
+  "timestamp": "2025-11-07T00:00:00.000Z"
+}`}</code>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // MangaReader Page  
+        function MangaReaderPage() {
+            const endpoints = [
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/search',
+                    description: 'Search manga by title or keywords',
+                    params: 'q (required), page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/home',
+                    description: 'Get homepage sections (trending, popular, latest)',
+                    params: '-'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/popular',
+                    description: 'Get all-time popular manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/trending',
+                    description: 'Get currently trending manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/latest-updates',
+                    description: 'Get recently updated manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/new-release',
+                    description: 'Get newly released manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/recommendations',
+                    description: 'Get recommended manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/completed',
+                    description: 'Get completed manga series',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/info/:id',
+                    description: 'Get detailed manga information and chapters',
+                    params: 'id (path)'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/chapter/*',
+                    description: 'Get chapter pages and images',
+                    params: 'Full chapter path'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/genres',
+                    description: 'Get list of all available genres',
+                    params: '-'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/mangareader/genre/:genre',
+                    description: 'Filter manga by genre',
+                    params: 'genre (path), page'
+                }
+            ];
+
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">MangaReader API Endpoints</h2>
+                        <p className="card-description">
+                            MangaReader.to is a comprehensive manga source with 5000+ titles. 
+                            All endpoints support pagination and caching.
+                        </p>
+                        <div>
+                            <span className="badge badge-success">Status: Active</span>
+                            <span className="badge badge-primary">Base URL: mangareader.to</span>
+                        </div>
+                    </div>
+
+                    <div className="endpoint-grid">
+                        {endpoints.map((endpoint, index) => (
+                            <div key={index} className="endpoint-card">
+                                <span className={`endpoint-method method-${endpoint.method.toLowerCase()}`}>
+                                    {endpoint.method}
+                                </span>
+                                <div className="endpoint-path">{endpoint.path}</div>
+                                <div className="endpoint-description">{endpoint.description}</div>
+                                {endpoint.params !== '-' && (
+                                    <div style={{marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray)'}}>
+                                        <strong>Params:</strong> {endpoint.params}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="card" style={{marginTop: '2rem'}}>
+                        <h3 className="card-title">Example Usage</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">javascript</span>
+                                <button className="copy-btn">
+                                    <i className="fas fa-copy"></i> Copy
+                                </button>
+                            </div>
+                            <code>{`// Search manga
+const search = await fetch(
+    '/api/v1/mangareader/search?q=bleach&page=1'
+).then(r => r.json());
+
+// Get manga info with chapters
+const info = await fetch(
+    '/api/v1/mangareader/info/bleach-1623'
+).then(r => r.json());
+
+console.log(info.data.chapters); // Array of chapters
+
+// Get chapter pages
+const chapter = await fetch(
+    '/api/v1/mangareader/chapter/read/bleach-1623/en/chapter-1'
+).then(r => r.json());
+
+console.log(chapter.data.pages); // Array of page images`}</code>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // Hentai20 Page
+        function Hentai20Page() {
+            const endpoints = [
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/search',
+                    description: 'Search manga by title',
+                    params: 'q (required), page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/home',
+                    description: 'Get homepage sections',
+                    params: '-'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/popular',
+                    description: 'Get popular manga',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/latest-updates',
+                    description: 'Get latest updates',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/manhwa-update',
+                    description: 'Get latest manhwa updates',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/webtoon-hot',
+                    description: 'Get hot webtoons',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/genres',
+                    description: 'Get all available genres',
+                    params: '-'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/genre/:genre',
+                    description: 'Filter by genre',
+                    params: 'genre (path), page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/info/:id',
+                    description: 'Get manga details',
+                    params: 'id (path)'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/hentai20/chapter/:id',
+                    description: 'Get chapter pages',
+                    params: 'id (path)'
+                }
+            ];
+
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">Hentai20 API Endpoints</h2>
+                        <p className="card-description">
+                            Hentai20.io provides manga, manhwa, and webtoon content. 
+                            Supports categories, latest updates, and genre filtering.
+                        </p>
+                        <div>
+                            <span className="badge badge-success">Status: Active</span>
+                            <span className="badge badge-primary">Base URL: hentai20.io</span>
+                        </div>
+                    </div>
+
+                    <div className="endpoint-grid">
+                        {endpoints.map((endpoint, index) => (
+                            <div key={index} className="endpoint-card">
+                                <span className={`endpoint-method method-${endpoint.method.toLowerCase()}`}>
+                                    {endpoint.method}
+                                </span>
+                                <div className="endpoint-path">{endpoint.path}</div>
+                                <div className="endpoint-description">{endpoint.description}</div>
+                                {endpoint.params !== '-' && (
+                                    <div style={{marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray)'}}>
+                                        <strong>Params:</strong> {endpoint.params}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="card" style={{marginTop: '2rem'}}>
+                        <h3 className="card-title">Example Usage</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">javascript</span>
+                            </div>
+                            <code>{`// Get home page data
+const home = await fetch('/api/v1/hentai20/home').then(r => r.json());
+
+// Search manga
+const search = await fetch(
+    '/api/v1/hentai20/search?q=secret+class'
+).then(r => r.json());
+
+// Get manga info
+const info = await fetch(
+    '/api/v1/hentai20/info/secret-class'
+).then(r => r.json());`}</code>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // OmegaScans Page
+        function OmegaScansPage() {
+            const endpoints = [
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/search',
+                    description: 'Search comics and novels',
+                    params: 'q (required), page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/home',
+                    description: 'Get homepage sections',
+                    params: '-'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/latest-updates',
+                    description: 'Get latest updates (all)',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/latest-comic-updates',
+                    description: 'Get latest comic updates',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/latest-novel-updates',
+                    description: 'Get latest novel updates',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/comic',
+                    description: 'Get comic listings',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/novel',
+                    description: 'Get novel listings',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/popular',
+                    description: 'Get popular content',
+                    params: 'page'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/info/:id',
+                    description: 'Get content details',
+                    params: 'id (path)'
+                },
+                {
+                    method: 'GET',
+                    path: '/api/v1/omegascans/chapter/:id',
+                    description: 'Get chapter/episode pages',
+                    params: 'id (path)'
+                }
+            ];
+
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">OmegaScans API Endpoints</h2>
+                        <p className="card-description">
+                            OmegaScans.org provides high-quality comics and novels. 
+                            Supports both comic and novel content with fast API responses.
+                        </p>
+                        <div>
+                            <span className="badge badge-success">Status: Active</span>
+                            <span className="badge badge-primary">Base URL: omegascans.org</span>
+                        </div>
+                    </div>
+
+                    <div className="endpoint-grid">
+                        {endpoints.map((endpoint, index) => (
+                            <div key={index} className="endpoint-card">
+                                <span className={`endpoint-method method-${endpoint.method.toLowerCase()}`}>
+                                    {endpoint.method}
+                                </span>
+                                <div className="endpoint-path">{endpoint.path}</div>
+                                <div className="endpoint-description">{endpoint.description}</div>
+                                {endpoint.params !== '-' && (
+                                    <div style={{marginTop: '0.75rem', fontSize: '0.85rem', color: 'var(--gray)'}}>
+                                        <strong>Params:</strong> {endpoint.params}
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="card" style={{marginTop: '2rem'}}>
+                        <h3 className="card-title">Example Usage</h3>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">javascript</span>
+                            </div>
+                            <code>{`// Get latest comic updates
+const comics = await fetch(
+    '/api/v1/omegascans/latest-comic-updates?page=1'
+).then(r => r.json());
+
+// Search content
+const search = await fetch(
+    '/api/v1/omegascans/search?q=solo+leveling'
+).then(r => r.json());
+
+// Get content info
+const info = await fetch(
+    '/api/v1/omegascans/info/solo-leveling-123'
+).then(r => r.json());`}</code>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // Configuration Page
+        function ConfigurationPage() {
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">Configuration</h2>
+                        <p className="card-description">
+                            Configure your API instance with environment variables and settings.
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Environment Variables</h3>
+                        <div className="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Variable</th>
+                                        <th>Description</th>
+                                        <th>Required</th>
+                                        <th>Default</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><code>NODE_ENV</code></td>
+                                        <td>Environment mode</td>
+                                        <td>No</td>
+                                        <td>development</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>PORT</code></td>
+                                        <td>Server port</td>
+                                        <td>No</td>
+                                        <td>3000</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>UPSTASH_REDIS_REST_URL</code></td>
+                                        <td>Upstash Redis REST URL</td>
+                                        <td>Recommended</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>UPSTASH_REDIS_REST_TOKEN</code></td>
+                                        <td>Upstash Redis REST Token</td>
+                                        <td>Recommended</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td><code>API_KEY</code></td>
+                                        <td>Optional API authentication key</td>
+                                        <td>No</td>
+                                        <td>-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Caching Configuration</h3>
+                        <p style={{marginBottom: '1rem'}}>The API uses a multi-layer caching strategy:</p>
+                        <div className="feature-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))'}}>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-memory"></i></div>
+                                <div className="feature-title">In-Memory Cache</div>
+                                <div className="feature-description">
+                                    <strong>TTL:</strong> 5-10 minutes<br/>
+                                    Fast access for frequently requested data
+                                </div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-database"></i></div>
+                                <div className="feature-title">Distributed Cache</div>
+                                <div className="feature-description">
+                                    <strong>TTL:</strong> 1 hour<br/>
+                                    Shared across serverless instances
+                                </div>
+                            </div>
+                        </div>
+                        <div className="code-block" style={{marginTop: '1.5rem'}}>
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                            </div>
+                            <code>{`# Bypass cache for any endpoint
+curl "https://api.example.com/api/v1/mangareader/trending?bustCache=true"`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Rate Limiting</h3>
+                        <div className="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Endpoint Type</th>
+                                        <th>Limit</th>
+                                        <th>Window</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Standard Endpoints</td>
+                                        <td>100 requests</td>
+                                        <td>15 minutes</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Expensive Endpoints</td>
+                                        <td>30 requests</td>
+                                        <td>5 minutes</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p style={{marginTop: '1rem', color: 'var(--gray)', fontSize: '0.9rem'}}>
+                            <i className="fas fa-info-circle"></i> Rate limits are applied per IP address
+                        </p>
+                    </div>
+                </>
+            );
+        }
+
+        // Deployment Page
+        function DeploymentPage() {
+            return (
+                <>
+                    <div className="card">
+                        <h2 className="card-title">Deployment Guide</h2>
+                        <p className="card-description">
+                            Deploy your API to production with Vercel or other serverless platforms.
+                        </p>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Deploy to Vercel</h3>
+                        <p style={{marginBottom: '1.5rem'}}>
+                            Vercel provides the easiest deployment experience with automatic builds and deployments.
+                        </p>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                            </div>
+                            <code>{`# Install Vercel CLI
+npm install -g vercel
+
+# Login to Vercel
+vercel login
+
+# Deploy to production
+vercel --prod`}</code>
+                        </div>
+                        <div style={{marginTop: '1.5rem', padding: '1rem', background: 'var(--light)', borderRadius: '8px'}}>
+                            <strong style={{color: 'var(--primary)'}}>
+                                <i className="fas fa-rocket"></i> One-Click Deploy
+                            </strong>
+                            <p style={{marginTop: '0.5rem', color: 'var(--gray)'}}>
+                                Use the "Deploy with Vercel" button in the README for instant deployment
+                            </p>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Environment Setup</h3>
+                        <p style={{marginBottom: '1rem'}}>
+                            Configure these environment variables in your Vercel dashboard:
+                        </p>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">env</span>
+                            </div>
+                            <code>{`NODE_ENV=production
+PORT=3000
+UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
+UPSTASH_REDIS_REST_TOKEN=your-token-here
+API_KEY=your-optional-api-key`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Build Configuration</h3>
+                        <p style={{marginBottom: '1rem'}}>
+                            The API uses TypeScript and requires build step:
+                        </p>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                            </div>
+                            <code>{`# Build TypeScript
+npm run build
+
+# Start production server
+npm start`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Verify Deployment</h3>
+                        <p style={{marginBottom: '1rem'}}>
+                            Test your deployment with these endpoints:
+                        </p>
+                        <div className="code-block">
+                            <div className="code-header">
+                                <span className="code-language">bash</span>
+                            </div>
+                            <code>{`# Health check
+curl https://your-api.vercel.app/health
+
+# API status
+curl https://your-api.vercel.app/api/status
+
+# Test endpoint
+curl "https://your-api.vercel.app/api/v1/mangareader/trending?page=1"`}</code>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <h3 className="card-title">Post-Deployment</h3>
+                        <div className="feature-grid" style={{gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))'}}>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-chart-line"></i></div>
+                                <div className="feature-title">Monitor Performance</div>
+                                <div className="feature-description">Use Vercel Analytics to track API performance</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-bell"></i></div>
+                                <div className="feature-title">Setup Alerts</div>
+                                <div className="feature-description">Configure error alerts and notifications</div>
+                            </div>
+                            <div className="feature-card">
+                                <div className="feature-icon"><i className="fas fa-shield-alt"></i></div>
+                                <div className="feature-title">Enable Security</div>
+                                <div className="feature-description">Add API key authentication for production</div>
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // Helper function
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Copied to clipboard!');
+            });
+        }
+
+        // Render App
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>

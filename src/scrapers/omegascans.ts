@@ -168,27 +168,64 @@ export class OmegaScansScraper extends BaseScraper {
 
   async getInfo(id: string): Promise<MangaInfo> {
     try {
-      const data = await this.fetchApi(`/series/${id}`);
+      // Use query endpoint with search to get full data including chapters
+      const data = await this.fetchApi(`/query?search=${encodeURIComponent(id)}`);
       
-      if (!data || !data.title) {
+      if (!data?.data || !Array.isArray(data.data) || data.data.length === 0) {
         throw new ScraperError('Series not found');
       }
 
-      const title = cleanText(data.title);
-      const cover = data.thumbnail || `${this.baseUrl}/icon.png`;
-      const description = data.description ? cleanText(data.description.replace(/<[^>]*>/g, '')) : '';
-      const status = data.status ? parseStatus(data.status) : parseStatus('Ongoing');
-      const type = data.series_type ? parseType(data.series_type) : parseType('Comic');
-      const author = data.author || '';
-      const rating = data.rating || undefined;
-      const genres = (data.tags || []).map((tag: any) => tag.name);
+      // Get the first matching series (should be exact match)
+      const seriesData = data.data[0];
+      
+      const title = cleanText(seriesData.title);
+      const cover = seriesData.thumbnail || `${this.baseUrl}/icon.png`;
+      const description = seriesData.description ? cleanText(seriesData.description.replace(/<[^>]*>/g, '')) : '';
+      const status = seriesData.status ? parseStatus(seriesData.status) : parseStatus('Ongoing');
+      const type = seriesData.series_type ? parseType(seriesData.series_type) : parseType('Comic');
+      const author = seriesData.author || '';
+      const rating = seriesData.rating || undefined;
+      const genres = (seriesData.tags || []).map((tag: any) => tag.name);
 
-      // Note: OmegaScans doesn't expose chapters via their API
-      // Chapters would need a headless browser to extract from client-side rendered content
+      // Parse chapters from free_chapters and paid_chapters
       const chapters: ChapterInfo[] = [];
+      const seriesSlug = seriesData.series_slug || id;
+      
+      // Add free chapters
+      if (seriesData.free_chapters && Array.isArray(seriesData.free_chapters)) {
+        seriesData.free_chapters.forEach((chapter: any) => {
+          const chapterNum = chapter.index ? String(chapter.index) : '0';
+          chapters.push({
+            id: `series/${seriesSlug}/${chapter.chapter_slug}`,
+            title: chapter.chapter_name || `Chapter ${chapter.index}`,
+            chapter: chapterNum,
+            releaseDate: chapter.created_at || undefined,
+          });
+        });
+      }
+      
+      // Add paid chapters
+      if (seriesData.paid_chapters && Array.isArray(seriesData.paid_chapters)) {
+        seriesData.paid_chapters.forEach((chapter: any) => {
+          const chapterNum = chapter.index ? String(chapter.index) : '0';
+          chapters.push({
+            id: `series/${seriesSlug}/${chapter.chapter_slug}`,
+            title: `${chapter.chapter_name || `Chapter ${chapter.index}`} [PAID]`,
+            chapter: chapterNum,
+            releaseDate: chapter.created_at || undefined,
+          });
+        });
+      }
+      
+      // Sort chapters by index (descending - latest first)
+      chapters.sort((a, b) => {
+        const aNum = parseFloat(a.chapter || '0');
+        const bNum = parseFloat(b.chapter || '0');
+        return bNum - aNum;
+      });
 
       return {
-        id,
+        id: seriesSlug,
         title,
         cover,
         description,
